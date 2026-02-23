@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { channel } from "./data/config.js";
 const withBase = (p) =>
-  `${import.meta.env.BASE_URL}${String(p || "").replace(/^\\/ / "")}`;
+  `${import.meta.env.BASE_URL}${String(p || "").replace(/^\//, "")}`;
 
 function Icon({ name }) {
   const common = {

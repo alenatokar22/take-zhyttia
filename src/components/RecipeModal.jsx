@@ -23,7 +23,12 @@ export default function RecipeModal({ recipe, onClose }) {
               </span>
 
               {youtubeLink && (
-                <a className="btn" href={youtubeLink} target="_blank" rel="noreferrer">
+                <a
+                  className="btn"
+                  href={youtubeLink}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   <Icon name="yt" /> Дивитись на YouTube
                 </a>
               )}
@@ -40,16 +45,29 @@ export default function RecipeModal({ recipe, onClose }) {
             <div className="panel-title">Інгредієнти</div>
 
             <ul className="ingredients">
-              {(recipe.ingredients || []).map((it, idx) => (
-                <li key={idx}>
-                  <span className="ing-name">{it.name}</span>
-                  <span className="ing-amt">{it.amount}</span>
-                </li>
-              ))}
+              {(recipe.ingredients || [])
+                .map((it) => {
+                  // підтримка 2 форматів: {name, amount} або "1 шт борошна"
+                  if (typeof it === "string") return { name: it, amount: "" };
+                  return {
+                    name: it?.name ?? it?.text ?? "",
+                    amount: it?.amount ?? "",
+                  };
+                })
+                .filter((x) => String(x.name).trim())
+                .map((it, idx) => (
+                  <li key={idx}>
+                    <span className="ing-name">{it.name}</span>
+                    {String(it.amount).trim() ? (
+                      <span className="ing-amt">{it.amount}</span>
+                    ) : null}
+                  </li>
+                ))}
             </ul>
 
             <div style={{ marginTop: 12, color: "var(--muted)", fontSize: 13 }}>
-              Порада: коли додаси відео, заповни поле <b>youtubeId</b> у цьому рецепті — і кнопка з’явиться автоматично.
+              Порада: коли додаси відео, заповни поле <b>youtubeId</b> у цьому
+              рецепті — і кнопка з’явиться автоматично.
             </div>
           </aside>
 

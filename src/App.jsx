@@ -1,10 +1,50 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Header from "./components/Header.jsx";
-import Hero from "./components/Hero.jsx";
+import HeroHome from "./components/HeroHome.jsx";
 import RecipeCard from "./components/RecipeCard.jsx";
 import RecipeModal from "./components/RecipeModal.jsx";
-import HeroHome from "./components/HeroHome.jsx";
+import CategoriesGrid from "./components/CategoriesGrid.jsx";
 import Footer from "./components/Footer.jsx";
+
+function normalizeCategoryTitle(s) {
+  return String(s || "").trim();
+}
+
+function flattenRecipesFromJson(data) {
+  // 1) Старий формат: масив рецептів
+  if (Array.isArray(data)) return data;
+
+  // 2) Новий формат: { meta, baking: {...}, "sweet-baking": {...}, ... }
+  if (data && typeof data === "object") {
+    const sections = Object.entries(data)
+      .filter(([k]) => k !== "meta")
+      .map(([, v]) => v)
+      .filter(Boolean);
+
+    const flat = sections.flatMap((section) => {
+      // підтримка двох варіантів:
+      // A) section = { id, title, recipes: [...] }
+      // B) section = [ { id,title,recipes }, { ... } ]  (якщо ти лишиш масив)
+      const blocks = Array.isArray(section) ? section : [section];
+
+      return blocks.flatMap((block) => {
+        const catTitle = normalizeCategoryTitle(block?.title) || "Без категорії";
+        const recipes = Array.isArray(block?.recipes) ? block.recipes : [];
+
+        return recipes
+          .filter((r) => r && r.title) // не показуємо пусті заготовки
+          .map((r) => ({
+            ...r,
+            category: normalizeCategoryTitle(r.category) || catTitle,
+          }));
+      });
+    });
+
+    return flat;
+  }
+
+  return [];
+}
 
 export default function App() {
   const [recipes, setRecipes] = useState([]);
@@ -12,8 +52,8 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null);
 
-  // категорія
   const [activeCategory, setActiveCategory] = useState("Всі");
+  const recipesRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -21,20 +61,18 @@ export default function App() {
     async function load() {
       try {
         setStatus("loading");
-        const res = await fetch(
-          `${import.meta.env.BASE_URL}data/recipes.json`,
-          {
-            cache: "no-store",
-          },
-        );
+        const res = await fetch(`${import.meta.env.BASE_URL}data/recipes.json`, {
+          cache: "no-store",
+        });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
         if (!cancelled) {
-          setRecipes(Array.isArray(data) ? data : []);
+          const flat = flattenRecipesFromJson(data);
+          setRecipes(flat);
           setStatus("ready");
         }
-      } catch {
+      } catch (e) {
         if (!cancelled) setStatus("error");
       }
     }
@@ -44,6 +82,9 @@ export default function App() {
       cancelled = true;
     };
   }, []);
+
+  const scrollToRecipes = () =>
+    recipesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   // Пошук
   const filtered = useMemo(() => {
@@ -56,7 +97,8 @@ export default function App() {
         return [i?.name, i?.amount].filter(Boolean).join(" ");
       });
 
-      const hay = [r.title, ...(r.tags || []), ...ingredientStrings]
+      const hay = [r.title, r.category, ...(r.tags || []), ...ingredientStrings]
+        .filter(Boolean)
         .join(" ")
         .toLowerCase();
 
@@ -64,17 +106,21 @@ export default function App() {
     });
   }, [recipes, query]);
 
-  // Список категорій
+  // Список категорій (для чіпсів)
   const categories = useMemo(() => {
-    const set = new Set(filtered.map((r) => r.category || "Без категорії"));
+    const set = new Set(
+      filtered.map((r) => normalizeCategoryTitle(r.category) || "Без категорії"),
+    );
     return ["Всі", ...Array.from(set)];
   }, [filtered]);
 
-  // Рецепти, видимі за категорією
+  // Рецепти видимі за категорією
   const visible = useMemo(() => {
     if (activeCategory === "Всі") return filtered;
     return filtered.filter(
-      (r) => (r.category || "Без категорії") === activeCategory,
+      (r) =>
+        (normalizeCategoryTitle(r.category) || "Без категорії") ===
+        activeCategory,
     );
   }, [filtered, activeCategory]);
 
@@ -82,16 +128,14 @@ export default function App() {
   const grouped = useMemo(() => {
     const map = new Map();
     for (const r of visible) {
-      const c = r.category || "Без категорії";
+      const c = normalizeCategoryTitle(r.category) || "Без категорії";
       if (!map.has(c)) map.set(c, []);
       map.get(c).push(r);
     }
     return map;
   }, [visible]);
 
-  const heroRecipe = visible[0];
-  const selected = recipes.find((r) => r.id === selectedId);
-  const recipesRef = React.useRef(null);
+  const selected = recipes.find((r) => r.id === selectedId) || null;
 
   return (
     <div className="app">
@@ -121,11 +165,29 @@ export default function App() {
       )}
 
       {status === "ready" && (
-        <HeroHome
-          onScrollToRecipes={() =>
-            recipesRef.current?.scrollIntoView({ behavior: "smooth" })
-          }
-        />
+        <>
+          <HeroHome onScrollToRecipes={scrollToRecipes} />
+
+          <CategoriesGrid
+            onSelect={(cat) => {
+              // якщо CategoriesGrid повертає "Випічка", "Закуска" тощо
+              setActiveCategory(cat);
+              scrollToRecipes();
+            }}
+          />
+        </>
+      )}
+
+      {status === "ready" && recipes.length === 0 && (
+        <main className="container">
+          <div className="section">
+            <h2>Рецептів поки немає</h2>
+            <div className="hint">
+              Додай рецепт у <code>public/data/recipes.json</code> — і він
+              з’явиться на сайті.
+            </div>
+          </div>
+        </main>
       )}
 
       {status === "ready" && recipes.length > 0 && (
@@ -138,7 +200,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* Категорії */}
+            {/* Чіпси категорій */}
             <div className="catbar">
               {categories.map((c) => (
                 <button

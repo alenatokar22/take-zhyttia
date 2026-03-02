@@ -20,11 +20,10 @@ export default function HeroHome({ onScrollToRecipes }) {
             <span className="pill">покроково</span>
           </div>
 
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <div className="hero-meta secondary">
             <button className="btn" onClick={onScrollToRecipes}>
               До рецептів
             </button>
-
             <a className="btn secondary" href="#recipes">
               Переглянути категорії
             </a>

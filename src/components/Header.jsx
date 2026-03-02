@@ -9,7 +9,9 @@ export default function Header({ query, setQuery }) {
           <div className="brand-mark">🍳</div>
           <div className="brand-text">
             <div className="brand-title">{channel.name}</div>
-            <div className="brand-sub">Домашні рецепти • покроково • з відео</div>
+            <div className="brand-sub">
+              Домашні рецепти • покроково • з відео
+            </div>
           </div>
         </div>
 

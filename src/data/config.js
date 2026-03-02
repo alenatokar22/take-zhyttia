@@ -1,5 +1,4 @@
 export const channel = {
-  name: "Таке життя",
-  // Встав сюди посилання на твій канал, наприклад: "https://www.youtube.com/@YourHandle"
-  youtubeUrl: "https://www.youtube.com/",
-}
+  name: "Take_zhyttya",
+  youtubeUrl: "https://www.youtube.com/@Take_zhyttya", //посилання на канал,
+};

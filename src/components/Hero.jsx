@@ -2,7 +2,9 @@ import Icon from "./Icon.jsx";
 import { withBase } from "../utils/withBase.js";
 
 export default function Hero({ recipe, onOpen }) {
-  const bg = recipe?.heroImage ? withBase(recipe.heroImage) : withBase("/images/hero.jpg");
+  const bg = recipe?.heroImage
+    ? withBase(recipe.heroImage)
+    : withBase("/images/hero.jpg");
 
   return (
     <section className="hero" style={{ backgroundImage: `url(${bg})` }}>
@@ -22,11 +24,13 @@ export default function Hero({ recipe, onOpen }) {
               </span>
             )}
             {(recipe?.tags || []).slice(0, 2).map((t) => (
-              <span key={t} className="pill">{t}</span>
+              <span key={t} className="pill">
+                {t}
+              </span>
             ))}
           </div>
 
-          <button className="btn" onClick={() => onOpen(recipe.id)}>
+          <button className="btn" onClick={() => recipe?.id && onOpen?.(recipe.id)}>
             Відкрити рецепт
           </button>
         </div>

@@ -21,7 +21,7 @@ export default function Footer() {
             rel="noreferrer"
             className="btn secondary"
           >
-            <Icon name="yt" /> Підписатися на YouTube
+            <Icon name="yt" /> Підписатися на @Take_zhyttya
           </a>
 
           <div className="footer-meta">

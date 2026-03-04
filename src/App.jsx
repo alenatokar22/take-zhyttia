@@ -10,6 +10,11 @@ function normalizeCategoryTitle(s) {
   return String(s || "").trim();
 }
 
+function normalizeCountryTitle(s) {
+  const t = String(s || "").trim();
+  return t || "Без країни";
+}
+
 function flattenRecipesFromJson(data) {
   // 1) Старий формат: масив рецептів
   if (Array.isArray(data)) return data;
@@ -22,20 +27,21 @@ function flattenRecipesFromJson(data) {
       .filter(Boolean);
 
     const flat = sections.flatMap((section) => {
-      // підтримка двох варіантів:
       // A) section = { id, title, recipes: [...] }
-      // B) section = [ { id,title,recipes }, { ... } ]  (якщо ти лишиш масив)
+      // B) section = [ { id,title,recipes }, { ... } ]
       const blocks = Array.isArray(section) ? section : [section];
 
       return blocks.flatMap((block) => {
-        const catTitle = normalizeCategoryTitle(block?.title) || "Без категорії";
+        const catTitle =
+          normalizeCategoryTitle(block?.title) || "Без категорії";
         const recipes = Array.isArray(block?.recipes) ? block.recipes : [];
 
         return recipes
-          .filter((r) => r && r.title) // не показуємо пусті заготовки
+          .filter((r) => r && String(r.title || "").trim()) // не показуємо пусті заготовки
           .map((r) => ({
             ...r,
             category: normalizeCategoryTitle(r.category) || catTitle,
+            country: normalizeCountryTitle(r.country),
           }));
       });
     });
@@ -53,6 +59,8 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null);
 
   const [activeCategory, setActiveCategory] = useState("Всі");
+  const [activeCountry, setActiveCountry] = useState("Всі країни");
+
   const recipesRef = useRef(null);
 
   useEffect(() => {
@@ -61,9 +69,12 @@ export default function App() {
     async function load() {
       try {
         setStatus("loading");
-        const res = await fetch(`${import.meta.env.BASE_URL}data/recipes.json`, {
-          cache: "no-store",
-        });
+        const res = await fetch(
+          `${import.meta.env.BASE_URL}data/recipes.json`,
+          {
+            cache: "no-store",
+          },
+        );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
@@ -72,7 +83,7 @@ export default function App() {
           setRecipes(flat);
           setStatus("ready");
         }
-      } catch (e) {
+      } catch {
         if (!cancelled) setStatus("error");
       }
     }
@@ -97,7 +108,13 @@ export default function App() {
         return [i?.name, i?.amount].filter(Boolean).join(" ");
       });
 
-      const hay = [r.title, r.category, ...(r.tags || []), ...ingredientStrings]
+      const hay = [
+        r.title,
+        r.category,
+        r.country,
+        ...(r.tags || []),
+        ...ingredientStrings,
+      ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
@@ -109,22 +126,41 @@ export default function App() {
   // Список категорій (для чіпсів)
   const categories = useMemo(() => {
     const set = new Set(
-      filtered.map((r) => normalizeCategoryTitle(r.category) || "Без категорії"),
+      filtered.map(
+        (r) => normalizeCategoryTitle(r.category) || "Без категорії",
+      ),
     );
     return ["Всі", ...Array.from(set)];
   }, [filtered]);
 
-  // Рецепти видимі за категорією
-  const visible = useMemo(() => {
-    if (activeCategory === "Всі") return filtered;
-    return filtered.filter(
-      (r) =>
-        (normalizeCategoryTitle(r.category) || "Без категорії") ===
-        activeCategory,
-    );
-  }, [filtered, activeCategory]);
+  // Список країн (для чіпсів)
+  const countries = useMemo(() => {
+    const set = new Set(filtered.map((r) => normalizeCountryTitle(r.country)));
+    return ["Всі країни", ...Array.from(set)];
+  }, [filtered]);
 
-  // Групування в секції
+  // Рецепти видимі за категорією + країною
+  const visible = useMemo(() => {
+    let list = filtered;
+
+    if (activeCategory !== "Всі") {
+      list = list.filter(
+        (r) =>
+          (normalizeCategoryTitle(r.category) || "Без категорії") ===
+          activeCategory,
+      );
+    }
+
+    if (activeCountry !== "Всі країни") {
+      list = list.filter(
+        (r) => normalizeCountryTitle(r.country) === activeCountry,
+      );
+    }
+
+    return list;
+  }, [filtered, activeCategory, activeCountry]);
+
+  // Групування в секції (по категоріях)
   const grouped = useMemo(() => {
     const map = new Map();
     for (const r of visible) {
@@ -166,12 +202,15 @@ export default function App() {
 
       {status === "ready" && (
         <>
-          <HeroHome onScrollToRecipes={scrollToRecipes} />
+          <HeroHome
+            onScrollToRecipes={scrollToRecipes}
+            onSelectCountry={(country) => setActiveCountry(country)}
+          />
 
           <CategoriesGrid
             onSelect={(cat) => {
-              // якщо CategoriesGrid повертає "Випічка", "Закуска" тощо
               setActiveCategory(cat);
+              setActiveCountry("Всі країни"); // щоб не було "порожньо" через старий фільтр
               scrollToRecipes();
             }}
           />
@@ -196,7 +235,8 @@ export default function App() {
             <div className="section-head">
               <h2>Рецепти</h2>
               <div className="hint">
-                Обери категорію або введи пошук — і знайдеш потрібне швидко 🙂
+                Обери категорію або введи пошук — і знайдеш потрібне
+                швидко 🙂
               </div>
             </div>
 

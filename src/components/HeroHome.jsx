@@ -1,7 +1,15 @@
-import Icon from "./Icon.jsx";
 import { withBase } from "../utils/withBase.js";
 
-export default function HeroHome({ onScrollToRecipes }) {
+const COUNTRIES = [
+  "Всі країни",
+  "Україна",
+  "Італія",
+  "Франція",
+  "Японія",
+  "США",
+];
+
+export default function HeroHome({ onScrollToRecipes, onSelectCountry }) {
   const bg = withBase("/images/hero.jpg");
 
   return (
@@ -10,20 +18,30 @@ export default function HeroHome({ onScrollToRecipes }) {
         <div className="container hero-content">
           <h1>Таке життя — домашні рецепти</h1>
 
-          <div className="hero-meta">
-            <span className="pill">
-              <Icon name="clock" /> швидко
-            </span>
-            <span className="pill">
-              <Icon name="users" /> для сім’ї
-            </span>
-            <span className="pill">покроково</span>
+          {/* Dropdown країн */}
+          <div className="hero-country-filter">
+            <label htmlFor="heroCountry">Кухня світу:</label>
+
+            <select
+              id="heroCountry"
+              onChange={(e) => {
+                onSelectCountry?.(e.target.value);
+                onScrollToRecipes?.();
+              }}
+            >
+              {COUNTRIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
           </div>
 
-          <div className="hero-meta secondary">
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <button className="btn" onClick={onScrollToRecipes}>
               До рецептів
             </button>
+
             <a className="btn secondary" href="#recipes">
               Переглянути категорії
             </a>

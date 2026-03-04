@@ -1,33 +1,40 @@
 .card {
   cursor: pointer;
-  text-align: left;
-  padding: 0;
   border: 1px solid var(--line);
-  background: var(--card);
-  border-radius: var(--radius-xl);
+  background: white;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 14px 30px rgba(17, 24, 39, 0.1);
-  transition:
-    transform 0.16s ease,
-    box-shadow 0.16s ease;
+  transition: all 0.25s ease;
+  position: relative;
 }
+
 .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 44px rgba(17, 24, 39, 0.14);
+  transform: translateY(-6px);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.15);
 }
 
 .card-image {
-  height: 140px;
+  height: 180px;
   background-size: cover;
   background-position: center;
-  border-bottom: 1px solid var(--line);
+  position: relative;
 }
-.card-body {
-  padding: 12px 12px 14px;
+
+.card-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0));
 }
-.card-title {
-  font-weight: 1000;
-  margin-bottom: 8px;
+
+.card-title{
+  font-weight:900;
+  font-size:16px;
+  margin-bottom:8px;
+}
+
+.card-body{
+  padding:14px;
 }
 
 .card-meta {
@@ -48,13 +55,14 @@
   flex-wrap: wrap;
   margin-top: 10px;
 }
-.badge {
-  font-size: 12px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(229, 57, 53, 0.22);
-  background: rgba(229, 57, 53, 0.08);
-  color: rgba(163, 36, 33, 1);
+
+.badge{
+  font-size:12px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:var(--accent-soft);
+  color:#a32421;
+  border:none;
 }
 
 .card-media {

@@ -5,7 +5,7 @@ const CATEGORIES = [
   //{ label: "Другі страви", icon: "🥘" },
   { label: "Випічка", icon: "🥐" },
   { label: "Випічка солодка", icon: "🍰" },
-  //{ label: "Напій", icon: "🥤" },
+  //{ label: "Десерт", icon: "🍰" },
   //{ label: "Напій", icon: "🥤" },
   //{ label: "Напій", icon: "🥤" },
   //{ label: "Напій", icon: "🥤" },
@@ -17,7 +17,9 @@ export default function CategoriesGrid({ onSelect }) {
       <div className="container">
         <div className="cats-head">
           <h2>Обери категорію</h2>
-          <div className="cats-sub">Натисни — і одразу покажуться рецепти 👇</div>
+          <div className="cats-sub">
+            Натисни — і одразу покажуться рецепти 👇
+          </div>
         </div>
 
         <div className="cats-grid">

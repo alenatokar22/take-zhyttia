@@ -74,6 +74,9 @@ export default function RecipeModal({ recipe, onClose }) {
                   <Icon name="users" /> {recipe.servings} порція
                 </span>
               )}
+              {!!recipe.country && (
+                <span className="pill">🌍 {recipe.country}</span>
+              )}
 
               {youtubeWatchLink && (
                 <a

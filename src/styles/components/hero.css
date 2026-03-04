@@ -39,8 +39,77 @@
 
 .hero-meta {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
-  color: var(--muted);
+  margin-top: 14px;
+}
+
+.hero-meta .pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hero-countries {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 14px 0 10px;
+}
+
+.hero-countries-label {
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.country-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+  font-weight: 600;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.country-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+}
+
+.country-pill .flag {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.country-pill.ghost {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.hero-country-filter {
+  margin-top: 14px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-country-filter label {
+  font-weight: 600;
+  color: rgb(18, 17, 17);
+}
+
+.hero-country-filter select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
 }
